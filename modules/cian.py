@@ -17,14 +17,14 @@ class Cian:
         self.last_token_obtain = None
         self.headers = {
             'Host': 'api.cian.ru',
-            'BuildNumber': '8807',
+            'BuildNumber': '0',
             'Accept': '*/*',
             'Os': 'ios',
             'Accept-Language': 'ru-RU;q=1, en-RU;q=0.9',
             'Content-Type': 'application/json',
-            'ApplicationID': '0003B12D-2B76-45CA-8925-4CC1F10D91BD',
-            'VersionCode': '13311000',
-            'User-Agent': 'Cian/1.331.1 (iPhone; iOS 17.4.1; Scale/3.00; 0003B12D-2B76-45CA-8925-4CC1F10D91BD)',
+            'ApplicationID': '0',
+            'VersionCode': '0',
+            'User-Agent': 'Cian/1.331.1 (iPhone; iOS 17.4.1; Scale/3.00; 0',
             'Device': 'Phone',
         }
 
@@ -86,7 +86,7 @@ class Cian:
             return {}
 
     def get_last_offer(self) -> int:
-        return self._get_offers()[0]
+        return self._get_offers()[0]["offer"]["id"]
 
     def parse_offers(self):
         offers = self._get_offers()
@@ -97,7 +97,7 @@ class Cian:
                 "price": offer["offer"]["formattedShortPrice"],
                 "additional": offer["offer"]["formattedAdditionalInfo"],
                 "url": offer["offer"]["siteUrl"],
-                "img": offer["offer"]["photos"][0]["small"],
+                "imgs": [photo["full"] for photo in offer["offer"]["photos"][:5]],
                 "address": offer["offer"]["geo"]["userInput"],
                 "underground": ", ".join(
                     "{} ({} {})".format(
@@ -108,6 +108,10 @@ class Cian:
                 ),
                 "created_at": offer["offer"]["creationDate"],
             }
+    def refresher(self) -> None:
+        while True:
+            self._obtain_token()
+            time.sleep(60 * 60 * 12)
         
 
 def main() -> None:
