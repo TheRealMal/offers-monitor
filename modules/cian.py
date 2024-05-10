@@ -10,7 +10,7 @@ CFG_PATH = "./configs/cian.json"
 SUCCESS_STATUS = "ok"
 
 class Cian:
-    def __init__(self, config=None, logger=Logger()) -> None:
+    def __init__(self, config=None, proxies=[], logger=Logger()) -> None:
         self.config = config
         self.logger = logger
         self.last_update = None
@@ -27,16 +27,23 @@ class Cian:
             'User-Agent': 'Cian/1.331.1 (iPhone; iOS 17.4.1; Scale/3.00; 0',
             'Device': 'Phone',
         }
-        # proxy_ip = ""
-        # self.proxies = { 
-        #     "https": f"http://{ip}/",
-        #     "https": f"https://{ip}/", 
-        # }
-        self.proxies = None
+        self.proxies_list = proxies
+        self.current_proxy = 0
+        self.proxy = None
 
         self._obtain_token()
         if not self.config:
             self._parse_config()
+
+    def _switch_proxy(self) -> None:
+        if len(self.proxies_list) == 0:
+            return
+        self.current_proxy = (self.current_proxy + 1) % len(self.proxies_list)
+        self.logger.log("current ip: {}".format(self.proxies_list[self.current_proxy]))
+        self.proxy = { 
+            "https": f"http://{self.proxies_list[self.current_proxy]}/",
+            "https": f"https://{self.proxies_list[self.current_proxy]}/", 
+        }
 
     def _parse_config(self) -> bool:
         try:
@@ -48,10 +55,11 @@ class Cian:
             return False
 
     def _obtain_token(self) -> bool:
+        self._switch_proxy()
         r = requests.post(
             'https://api.cian.ru/1.4/ios/get-session-anonymous',
             headers=self.headers,
-            proxies=self.proxies,
+            proxies=self.proxy,
             verify=False
         )
         if r.status_code != 200:
@@ -74,6 +82,7 @@ class Cian:
         return False
 
     def _get_offers(self) -> dict:
+        self._switch_proxy()
         r = requests.post(
             'https://api.cian.ru/search-offers/v4/search-offers-mobile-apps/',
             params={
@@ -81,7 +90,7 @@ class Cian:
             },
             headers=self.headers,
             data=self.config,
-            proxies=self.proxies,
+            proxies=self.proxy,
             verify=False
         )
         if r.status_code != 200:

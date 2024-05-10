@@ -55,7 +55,9 @@ def main() -> None:
     last_offers = {
         "cian": -1,
     }
-    cian = Cian()
+    cian = Cian(
+        proxies=[]
+    )
     last_offers["cian"] = cian.get_last_offer()
 
     t1 = threading.Thread(target=monitor_cian, args=(last_offers, cian))
