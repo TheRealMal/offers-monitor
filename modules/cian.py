@@ -27,6 +27,12 @@ class Cian:
             'User-Agent': 'Cian/1.331.1 (iPhone; iOS 17.4.1; Scale/3.00; 0',
             'Device': 'Phone',
         }
+        # proxy_ip = ""
+        # self.proxies = { 
+        #     "https": f"http://{ip}/",
+        #     "https": f"https://{ip}/", 
+        # }
+        self.proxies = None
 
         self._obtain_token()
         if not self.config:
@@ -45,6 +51,7 @@ class Cian:
         r = requests.post(
             'https://api.cian.ru/1.4/ios/get-session-anonymous',
             headers=self.headers,
+            proxies=self.proxies,
             verify=False
         )
         if r.status_code != 200:
@@ -74,6 +81,7 @@ class Cian:
             },
             headers=self.headers,
             data=self.config,
+            proxies=self.proxies,
             verify=False
         )
         if r.status_code != 200:
@@ -110,8 +118,8 @@ class Cian:
             }
     def refresher(self) -> None:
         while True:
+            time.sleep(60 * 60)
             self._obtain_token()
-            time.sleep(60 * 60 * 12)
         
 
 def main() -> None:
